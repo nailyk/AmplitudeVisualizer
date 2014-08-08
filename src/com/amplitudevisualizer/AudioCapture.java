@@ -16,7 +16,7 @@ public class AudioCapture implements Runnable {
 	private AudioRecord mRecordInstance = null;
 	private short audioData[];
 	private int bufferSize;
-	private int secondsToRecord;
+	private int recordTime;
 
 	private AudioCaptureListener listener;
 
@@ -33,9 +33,14 @@ public class AudioCapture implements Runnable {
 	 */
 	public void capture() {
 		// start the recording thread
-		this.secondsToRecord = 30;
 		thread = new Thread(this);
 		thread.start(); // call the run method
+	}
+	
+	public void capture(int _recordTime) {
+		// start the recording thread
+		this.recordTime = _recordTime;
+		capture();
 	}
 
 	/**
@@ -57,7 +62,7 @@ public class AudioCapture implements Runnable {
 
 			// and the actual buffer size for the audio to record
 			// SAMPLE_RATE * seconds to record * 1 (one channel input)
-			bufferSize = Math.max(minBufferSize, SAMPLE_RATE * secondsToRecord);
+			bufferSize = Math.max(minBufferSize, SAMPLE_RATE * recordTime);
 
 			audioData = new short[bufferSize];
 
@@ -70,7 +75,7 @@ public class AudioCapture implements Runnable {
 			double duration_since_recording = 0.;
 			int readBuffer = 0;
 			
-			// fill audio buffer with mic data for time period = seconds_to_record 
+			// fill audio buffer with mic data for time period = timeRecord
 			while (readBuffer < bufferSize && mRecordInstance.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING)
 			{
 				int offset_buffer = readBuffer;

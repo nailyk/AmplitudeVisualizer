@@ -4,10 +4,15 @@ import com.amplitudevisualizer.R;
 import com.amplitudevisualizer.AudioCapture.*;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -21,7 +26,7 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
-public class MainActivity extends Activity implements AudioCaptureListener {
+public class MainActivity extends Activity implements AudioCaptureListener, OnSharedPreferenceChangeListener {
 	
 	private GraphicalView chart_view;
 	private XYMultipleSeriesDataset m_dataset;  //Object that can hold multiple TimeSeries objects and plot them
@@ -29,40 +34,42 @@ public class MainActivity extends Activity implements AudioCaptureListener {
 	private XYSeriesRenderer renderer;
 	private XYSeries amplitude_series; // Object for storing (x,y) pair values
 			
-	boolean recording = false;
-	boolean end_capture = false;
+	boolean recording;
+	boolean end_capture;
 	AudioCapture audio_capture;
 	TextView status;
 	Button recordButton, cancelButton;
 	LinearLayout chartContainer;
+	int recordTime;
+	SharedPreferences sharedPref;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPref.registerOnSharedPreferenceChangeListener(this);
+		recordTime = Integer.parseInt(sharedPref.getString("record_time", "15"));
+		recording = false; end_capture = false;
 		recordButton = (Button) findViewById(R.id.b_record);
 		recordButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				// Perform action on click
 				if (recording) {
 					audio_capture.stop();
-					recordButton.setText(R.string.b_record);
-					cancelButton.setEnabled(false);
-					end_capture = true;
 				} 
-
 				else {
 					if (end_capture) {
-						chartContainer.removeAllViews();
-						initChart();
+						clearChartData();
+						chart_view.repaint();
 					}
 					if (audio_capture == null) {
 						audio_capture = new AudioCapture(MainActivity.this);
 					}
-					audio_capture.capture();
+					end_capture = false;
+					audio_capture.capture(recordTime);
 					recordButton.setText("stop");
 					cancelButton.setEnabled(true);
-					end_capture = false;
 				}
 			}
 		});
@@ -71,12 +78,8 @@ public class MainActivity extends Activity implements AudioCaptureListener {
 			public void onClick(View v) {
 				// Perform action on click
 				audio_capture.stop();
-				chartContainer.removeAllViews();
-				initChart();
-				recordButton.setText(R.string.b_record);
-				status.setText(R.string.t_status);
-				cancelButton.setEnabled(false);
-				
+				clearChartData();
+				chart_view.repaint();
 			}
 		});
 		cancelButton.setEnabled(false);
@@ -111,23 +114,27 @@ public class MainActivity extends Activity implements AudioCaptureListener {
 	@Override
 	public void didFailWithException(Exception e) {
 		status.setText("Error: " + e);
+		recording = false;
+		end_capture = true;
 	}
 
 	@Override
 	public void didInterrupted() {
 		status.setText(R.string.t_status);
 		recording = false;
+		recordButton.setText(R.string.b_record);
+		cancelButton.setEnabled(false);
+		end_capture = true;
 	}
 	
 	@Override
 	public void didComputeNewAmplitude(double time, double amplitude) {
-		//nb_points++;
 		m_dataset.getSeriesAt(0).add(time, amplitude);
 		chart_view.repaint();
 	}
 	
 	public void initChart() {
-		amplitude_series = new XYSeries("amplitude du signal audio");
+		amplitude_series = new XYSeries("Sound amplitude");
 		m_dataset = new XYMultipleSeriesDataset();
 		m_dataset.addSeries(amplitude_series);
         renderer = new XYSeriesRenderer();
@@ -149,8 +156,6 @@ public class MainActivity extends Activity implements AudioCaptureListener {
         m_renderer.setXLabels(4);
         m_renderer.setXLabelsAlign(Align.RIGHT);
         m_renderer.setYLabelsAlign(Align.RIGHT);
-        //m_renderer.setRange(new double[] {0,30,0,40000});
-        
         m_renderer.setApplyBackgroundColor(true);
         m_renderer.setBackgroundColor(Color.WHITE);
         m_renderer.setMarginsColor(Color.WHITE);
@@ -158,7 +163,7 @@ public class MainActivity extends Activity implements AudioCaptureListener {
         m_renderer.setZoomButtonsVisible(true);
         m_renderer.setInScroll(true);
         m_renderer.setXAxisMin(0);
-        m_renderer.setXAxisMax(30);        
+        m_renderer.setXAxisMax(recordTime);
         m_renderer.setYAxisMin(0);
 
 
@@ -168,12 +173,42 @@ public class MainActivity extends Activity implements AudioCaptureListener {
         chartContainer.addView(chart_view);
 	}
 	
-	
+	public void clearChartData() {
+		amplitude_series.clear();
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}	
+	
+	
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		// TODO Auto-generated method stub
+		switch(item.getItemId()) {
+		case R.id.action_settings:
+			startActivity(new Intent(this, MyPreferenceActivity.class));
+			return true;
+		}
+		return super.onMenuItemSelected(featureId, item);
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+			String key) {
+		// TODO Auto-generated method stub
+		if (key.equals("record_time")) {
+			recordTime = Integer.parseInt(sharedPref.getString("record_time", "15"));
+			if (recording) {
+				audio_capture.stop();
+		        clearChartData();
+			}
+	        m_renderer.setXAxisMax(recordTime);
+			chart_view.repaint();
+		}
 	}
 
 }

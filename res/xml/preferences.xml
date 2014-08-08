@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:defaultValue="15"
+        android:inputType="number"
+        android:key="record_time"
+        android:persistent="true"
+        android:title="@string/settings_title_recordtime" />
+
+</PreferenceScreen>

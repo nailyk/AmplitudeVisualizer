@@ -5,9 +5,9 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="10"
-        android:targetSdkVersion="18" />
-    
+        android:minSdkVersion="11"
+        android:targetSdkVersion="19" />
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
@@ -17,6 +17,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.amplitudevisualizer.MainActivity"
+            android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >
             <intent-filter>
@@ -24,6 +25,10 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.amplitudevisualizer.MyPreferenceActivity"
+            android:label="My Preferences" >
         </activity>
     </application>
 
