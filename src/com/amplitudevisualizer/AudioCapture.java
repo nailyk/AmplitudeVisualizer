@@ -94,7 +94,7 @@ public class AudioCapture implements Runnable {
 				int end_buffer = offset_buffer + SIZE_BUFFER_AMPLITUDE - 1;
 				double sum = 0;
 				int nb_vals = 0;
-				while (end_buffer < offset_buffer + minBufferSize) {
+				while (end_buffer < offset_buffer + minBufferSize && end_buffer < bufferSize) {
 					for (int i = end_buffer - SIZE_BUFFER_AMPLITUDE + 1; i <= end_buffer && i < bufferSize ; i++)
 					{
 						// The vibrations in the air cause the microphone surface to vibrate in both directions (up and down)
@@ -127,6 +127,7 @@ public class AudioCapture implements Runnable {
 
 			// A FAIRE : ecrire methode qui enregistre le son capturé dans un fichier .wav
 			didFinishListening();
+			return;
 		}
 		catch (Exception e) {
 			e.printStackTrace();

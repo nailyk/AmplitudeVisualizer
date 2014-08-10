@@ -27,7 +27,7 @@ import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 public class MainActivity extends Activity implements AudioCaptureListener, OnSharedPreferenceChangeListener {
-	
+
 	private GraphicalView chart_view;
 	private XYMultipleSeriesDataset m_dataset;  //Object that can hold multiple TimeSeries objects and plot them
 	private XYMultipleSeriesRenderer m_renderer;
@@ -92,17 +92,7 @@ public class MainActivity extends Activity implements AudioCaptureListener, OnSh
 
 	@Override
 	public void didFinishListening() {
-		recording = false;
-		end_capture = true;
-		recordButton.setText(R.string.b_record);
-		//status.setText(Integer.toString(nb_points));
-		status.setText(R.string.t_status);
-		cancelButton.setEnabled(false);
-		/*
-		 * demarrage nouvelle tache pour afficher l'amplitude du son dans un fichier
-		 */
-		// new SaveSoundTask().execute();
-
+		didInterrupted();
 	}
 
 	@Override
@@ -161,12 +151,9 @@ public class MainActivity extends Activity implements AudioCaptureListener, OnSh
         m_renderer.setMarginsColor(Color.WHITE);
         m_renderer.setLabelsColor(Color.DKGRAY);
         m_renderer.setZoomButtonsVisible(true);
-        m_renderer.setInScroll(true);
         m_renderer.setXAxisMin(0);
         m_renderer.setXAxisMax(recordTime);
         m_renderer.setYAxisMin(0);
-
-
         chartContainer = (LinearLayout) findViewById(R.id.chart_container);
         chart_view = (GraphicalView) ChartFactory.getLineChartView(getBaseContext(), m_dataset, m_renderer);
         // Adding the Line Chart to the LinearLayout
