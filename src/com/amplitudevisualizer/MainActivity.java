@@ -1,5 +1,7 @@
 package com.amplitudevisualizer;
 
+import java.text.NumberFormat;
+
 import com.amplitudevisualizer.R;
 import com.amplitudevisualizer.AudioCapture.*;
 
@@ -131,9 +133,19 @@ public class MainActivity extends Activity implements AudioCaptureListener, OnSh
         
         renderer.setPointStyle(PointStyle.POINT);
         renderer.setColor(Color.BLACK);
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(0);
+        renderer.setChartValuesFormat(format);
         renderer.setFillPoints(true);
         renderer.setDisplayChartValues(true);
+        /*FillOutsideLine fill = new FillOutsideLine(FillOutsideLine.Type.BOUNDS_ALL);
+        fill.setColor(Color.parseColor("#FFFFA600"));
+        renderer.addFillOutsideLine(fill);
         
+        renderer.setGradientEnabled(true);
+        renderer.setGradientStart(0, Color.rgb(192, 192, 192));
+        renderer.setGradientStop(45, Color.rgb(25, 25, 112));
+        */
         m_renderer = new XYMultipleSeriesRenderer();
         m_renderer.addSeriesRenderer(renderer);
 
@@ -143,7 +155,8 @@ public class MainActivity extends Activity implements AudioCaptureListener, OnSh
         m_renderer.setAxesColor(Color.RED);
         m_renderer.setShowGrid(true);
         m_renderer.setFitLegend(true); // Make the legend auto-resizable 
-        m_renderer.setXLabels(4);
+        m_renderer.setXLabels(10);
+        m_renderer.setYLabels(5);
         m_renderer.setXLabelsAlign(Align.RIGHT);
         m_renderer.setYLabelsAlign(Align.RIGHT);
         m_renderer.setApplyBackgroundColor(true);
@@ -154,8 +167,9 @@ public class MainActivity extends Activity implements AudioCaptureListener, OnSh
         m_renderer.setXAxisMin(0);
         m_renderer.setXAxisMax(recordTime);
         m_renderer.setYAxisMin(0);
+        m_renderer.setAntialiasing(true);
         chartContainer = (LinearLayout) findViewById(R.id.chart_container);
-        chart_view = (GraphicalView) ChartFactory.getLineChartView(getBaseContext(), m_dataset, m_renderer);
+        chart_view = (GraphicalView) ChartFactory.getCubeLineChartView(getBaseContext(), m_dataset, m_renderer, 0.2f );
         // Adding the Line Chart to the LinearLayout
         chartContainer.addView(chart_view);
 	}

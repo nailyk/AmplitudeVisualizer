@@ -34,7 +34,7 @@ public class AudioCapture implements Runnable {
 	public void capture() {
 		// start the recording thread
 		thread = new Thread(this);
-		thread.start(); // call the run method
+		thread.start();
 	}
 	
 	public void capture(int _recordTime) {
@@ -68,13 +68,11 @@ public class AudioCapture implements Runnable {
 
 			// start recorder
 			mRecordInstance = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL, ENCODING, minBufferSize);
-
 			willStartListening();
-			mRecordInstance.startRecording();
 			
 			double duration_since_recording = 0.;
 			int readBuffer = 0;
-			
+			mRecordInstance.startRecording();
 			// fill audio buffer with mic data for time period = timeRecord
 			while (readBuffer < bufferSize && mRecordInstance.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING)
 			{
@@ -92,7 +90,7 @@ public class AudioCapture implements Runnable {
 				// calculate a new amplitude value for all the buffers of size 256
 				
 				int end_buffer = offset_buffer + SIZE_BUFFER_AMPLITUDE - 1;
-				double sum = 0;
+				double sum = 0.;
 				int nb_vals = 0;
 				while (end_buffer < offset_buffer + minBufferSize && end_buffer < bufferSize) {
 					for (int i = end_buffer - SIZE_BUFFER_AMPLITUDE + 1; i <= end_buffer && i < bufferSize ; i++)
@@ -101,13 +99,13 @@ public class AudioCapture implements Runnable {
 						// so we take | audioData[i] | in order to only have positive values
 						sum += Math.abs(audioData[i]);
 						nb_vals++;
-					}	
+					}
 					double amplitude = sum / nb_vals; // we get the mean amplitude for all audio data in the corresponding buffer
 					didComputeNewAmplitude(duration_since_recording, amplitude);
 					
 					duration_since_recording += (double) nb_vals / 44100; // voir calcul_amplitude.txt pour precisions
 					end_buffer += SIZE_BUFFER_AMPLITUDE - 1;
-					sum = 0; nb_vals = 0;
+					sum = 0.; nb_vals = 0;
 				}
 			}
 
